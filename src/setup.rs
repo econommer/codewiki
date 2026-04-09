@@ -309,7 +309,6 @@ fn remove_section(content: &str, header: &str) -> String {
         if !in_code_block {
             if line.starts_with(header) {
                 skipping = true;
-                in_code_block = false;
                 continue;
             }
             if skipping && line.starts_with("## ") {

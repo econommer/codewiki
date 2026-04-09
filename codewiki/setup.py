@@ -258,7 +258,6 @@ def _remove_section(content: str, header: str) -> str:
         if not in_code_block:
             if line.startswith(header):
                 skipping = True
-                in_code_block = False  # reset in case header was at boundary
                 continue
             if skipping and line.startswith("## "):
                 skipping = False
