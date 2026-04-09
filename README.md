@@ -38,7 +38,21 @@ CodeWiki is a thin CLI (`cw`) paired with a Claude Code skill. The CLI handles g
 
 ## Installation
 
-### From source (requires Rust)
+### From PyPI (Python — recommended)
+
+```bash
+pip install codewiki
+```
+
+Or install from source:
+
+```bash
+git clone https://github.com/mraza007/codewiki.git
+cd codewiki
+pip install .
+```
+
+### From source (Rust)
 
 ```bash
 git clone https://github.com/mraza007/codewiki.git
@@ -60,10 +74,10 @@ cd your-project
 cw init
 
 # 2. Set up your AI agent
-cw setup claude-code   # or: cw setup codex
+cw setup copilot       # or: cw setup claude-code / cw setup codex
 
-# 3. Start a Claude Code session — the skill triggers automatically
-#    Claude reads your codebase and compiles the wiki
+# 3. Start a coding session — the skill triggers automatically
+#    Your agent reads your codebase and compiles the wiki
 
 # 4. Open in Obsidian
 #    Point Obsidian at ~/.codewiki/ as a vault
@@ -170,13 +184,24 @@ cw meta update           # Record current commit as "compiled"
 
 cw setup claude-code     # Install skill into Claude Code
 cw setup codex           # Install instructions into Codex
+cw setup copilot         # Install instructions into GitHub Copilot
 cw setup qmd             # Register wiki as QMD search collection
 
 cw uninstall claude-code # Remove from Claude Code
 cw uninstall codex       # Remove from Codex
+cw uninstall copilot     # Remove from GitHub Copilot
 ```
 
 ## Integrations
+
+### GitHub Copilot
+
+`cw setup copilot` installs codewiki instructions into `.github/copilot-instructions.md` in the current repository. GitHub Copilot's coding agent will check the wiki at session start, update stale articles, and maintain the wiki as you work.
+
+```bash
+cd your-project
+cw setup copilot    # creates .github/copilot-instructions.md
+```
 
 ### Claude Code
 

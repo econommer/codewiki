@@ -53,6 +53,8 @@ enum SetupTarget {
     ClaudeCode,
     /// Install codewiki instructions for Codex
     Codex,
+    /// Install codewiki instructions for GitHub Copilot
+    Copilot,
     /// Add codewiki collection to QMD search
     Qmd,
 }
@@ -63,6 +65,8 @@ enum UninstallTarget {
     ClaudeCode,
     /// Remove codewiki from Codex
     Codex,
+    /// Remove codewiki from GitHub Copilot
+    Copilot,
 }
 
 fn main() -> anyhow::Result<()> {
@@ -79,11 +83,13 @@ fn main() -> anyhow::Result<()> {
         Commands::Setup { target } => match target {
             SetupTarget::ClaudeCode => setup::setup_claude_code(),
             SetupTarget::Codex => setup::setup_codex(),
+            SetupTarget::Copilot => setup::setup_copilot(),
             SetupTarget::Qmd => setup::setup_qmd(),
         },
         Commands::Uninstall { target } => match target {
             UninstallTarget::ClaudeCode => setup::uninstall_claude_code(),
             UninstallTarget::Codex => setup::uninstall_codex(),
+            UninstallTarget::Copilot => setup::uninstall_copilot(),
         },
     }
 }
