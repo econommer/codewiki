@@ -10,6 +10,8 @@ use crate::config;
 
 const SKILL_MD: &str = include_str!("../skills/codewiki-session.md");
 
+const COPILOT_SKILL_MD: &str = include_str!("../skills/copilot-instructions.md");
+
 const CODEX_AGENTS_SECTION: &str = r#"
 
 ## CodeWiki — Codebase Knowledge
@@ -139,6 +141,41 @@ pub fn setup_codex() -> Result<()> {
 }
 
 // ---------------------------------------------------------------------------
+// GitHub Copilot setup
+// ---------------------------------------------------------------------------
+
+pub fn setup_copilot() -> Result<()> {
+    let repo_path = std::env::current_dir().context("Failed to get current directory")?;
+    let github_dir = repo_path.join(".github");
+    let instructions_path = github_dir.join("copilot-instructions.md");
+
+    let existing = std::fs::read_to_string(&instructions_path).unwrap_or_default();
+
+    if existing.contains("## CodeWiki") {
+        println!("CodeWiki already installed in {}", instructions_path.display());
+        return Ok(());
+    }
+
+    std::fs::create_dir_all(&github_dir)
+        .with_context(|| format!("Failed to create {}", github_dir.display()))?;
+
+    let content = if existing.trim().is_empty() {
+        COPILOT_SKILL_MD.to_string()
+    } else {
+        format!("{}\n\n{}", existing.trim_end(), COPILOT_SKILL_MD)
+    };
+    std::fs::write(&instructions_path, content)
+        .with_context(|| format!("Failed to write {}", instructions_path.display()))?;
+
+    println!("Installed codewiki instructions to {}", instructions_path.display());
+    println!();
+    println!("GitHub Copilot will now use the codewiki skill to maintain");
+    println!("your codebase wiki during coding sessions.");
+
+    Ok(())
+}
+
+// ---------------------------------------------------------------------------
 // QMD setup
 // ---------------------------------------------------------------------------
 
@@ -234,18 +271,51 @@ pub fn uninstall_codex() -> Result<()> {
     Ok(())
 }
 
+pub fn uninstall_copilot() -> Result<()> {
+    let repo_path = std::env::current_dir().context("Failed to get current directory")?;
+    let instructions_path = repo_path.join(".github").join("copilot-instructions.md");
+
+    if let Ok(content) = std::fs::read_to_string(&instructions_path) {
+        if content.contains("## CodeWiki") {
+            let cleaned = remove_section(&content, "## CodeWiki");
+            let cleaned = cleaned.trim();
+            if cleaned.is_empty() {
+                std::fs::remove_file(&instructions_path)?;
+                println!("Removed empty copilot-instructions.md.");
+            } else {
+                std::fs::write(&instructions_path, format!("{}\n", cleaned))?;
+            }
+            println!("Removed codewiki from GitHub Copilot instructions.");
+        } else {
+            println!("Nothing to remove.");
+        }
+    } else {
+        println!("Nothing to remove.");
+    }
+    Ok(())
+}
+
 fn remove_section(content: &str, header: &str) -> String {
     let mut result = String::new();
     let mut skipping = false;
+    let mut in_code_block = false;
 
     for line in content.lines() {
-        if line.starts_with(header) {
-            skipping = true;
-            continue;
+        let trimmed = line.trim();
+        if trimmed.starts_with("```") {
+            in_code_block = !in_code_block;
         }
-        if skipping && line.starts_with("## ") {
-            skipping = false;
+
+        if !in_code_block {
+            if line.starts_with(header) {
+                skipping = true;
+                continue;
+            }
+            if skipping && line.starts_with("## ") {
+                skipping = false;
+            }
         }
+
         if !skipping {
             result.push_str(line);
             result.push('\n');
